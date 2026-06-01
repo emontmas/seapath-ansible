@@ -11,3 +11,8 @@ cephadm_install_repo: "{{ cephadm_installrepo | default(false) }}"
 cephadm_install_common: "{{ cephadm_installcommon | default(false) }}"
 cephadm_install_package: "{{ cephadm_installpackage | default(false) }}"
 cephadm_install_pullimages: "{{ cephadm_pullimages | default(false) }}"
+cephadm_install_cephadm_uid: "{{ omit }}"
+cephadm_install_cephadm_gid: "{{ omit }}"
+cephadm_install_containerized_ceph_uid: "{{ omit }}"
+cephadm_install_containerized_ceph_gid: "{{ omit }}"
+cephadm_install_containerized_ceph_enabled: false

@@ -4,12 +4,21 @@
 # This playbook configures and sets up Ceph with cephadm.
 
 ---
-- name: Install cephadm prerequisites
+- name: Load distribution-specific variables for cephadm_install
   hosts: cluster_machines
   become: true
   gather_facts: true
   roles:
     - detect_seapath_distro
+  tasks:
+    - name: Load cephadm_install distribution-specific variables
+      ansible.builtin.include_vars: "../vars/{{ seapath_distro }}_cephadm_install.yml"
+
+- name: Install cephadm prerequisites
+  hosts: cluster_machines
+  become: true
+  gather_facts: true
+  roles:
     - cephadm_install
 
 - name: Prepare Ceph installation
