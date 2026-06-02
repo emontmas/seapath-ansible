@@ -18,6 +18,7 @@ No requirement.
 | cluster_ip_addr | No       | String | Cluster IP address              |
 | configure_hardening_ssh_service | Yes | String | Name of SSH systemd service |
 | configure_hardening_login_defs_file | No | The login.defs file to configure. Defaults to /etc/login.defs |
+| configure_hardening_etc_securetty_group | No | The group of the /etc/securetty file. Defaults to root |
 
 ## Example Playbook
 
