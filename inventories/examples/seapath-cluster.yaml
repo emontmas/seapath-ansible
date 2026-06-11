@@ -4,7 +4,7 @@
 
 # Note : This inventory uses a three hypervisors setup.
 # If you want to switch to a two hypervisor + one observer setup, you must :
-# - choose which machine will be the observer (ex: node3)
+# - choose which machine will be the observer (ex: observer)
 # - remove the machine from the hypervisors group
 # - add the machine to the observers group
 # - remove the machine from the osds group
@@ -13,31 +13,33 @@
 ---
 all:
   hosts:
-    node1:
-      ansible_host: 192.168.200.121 # Administration IP. TODO
-      network_interface: eno1 # Administration interface. TODO
-      ptp_interface: "eno12419" # PTP interface. TODO
+    hypervisor1:
+      ansible_host: 10.201.20.1
+      network_interface: enp6s0
+      ptp_interface: "enp6s0"
 
-    node2:
-      ansible_host: 192.168.200.122 # Administration IP. TODO
-      network_interface: eno1 # Administration interface. TODO
-      ptp_interface: "eno12419" # PTP interface. TODO
+    hypervisor2:
+      ansible_host: 10.201.20.2
+      network_interface: enp6s0
+      ptp_interface: "enp6s0"
 
-    node3:
-      ansible_host: 192.168.200.123 # Administration IP. TODO
-      network_interface: eno1 # Administration interface. TODO
-      ptp_interface: "eno12419" # PTP interface. TODO
+    observer:
+      ansible_host: 10.201.20.3
+      network_interface: enp7s0
+      ptp_interface: "enp7s0"
 
   vars:
-    # Debian specific, remove if you use Yocto. TODO
     admin_user: admin
 
     # Main network configuration
-    gateway_addr: "192.168.200.1" # Administration Gateway. TODO
-    dns_servers: "192.168.200.1" # DNS servers. Remove if not used. TODO
-    subnet: 24 # Subnet mask in CIDR notation. TODO
-    ntp_servers: # NTP servers IP. TODO
-      - "185.254.101.25" # public NTP server example
+    gateway_addr: "10.201.0.1"
+    dns_servers: "10.201.0.1"
+    subnet: 16
+    ntp_servers:
+      - "92.222.117.115"
+      - "91.194.60.128"
+      - "82.67.41.119"
+      - "51.68.44.27"
     ptp_domain_number: 0 # PTP domain number (0 to 255)
     timemaster_ptp_domain_number: "{{ ptp_domain_number }}"
     ptp_status_vsock_domain_number: "{{ ptp_domain_number }}"
@@ -56,62 +58,67 @@ all:
     # Use grub2-mkpasswd-pbkdf2 / grub-mkpasswd-pbkdf2 to encoded it.
     # Default password is seapath
     grub_password: "grub.pbkdf2.sha512.10000.876266D5A876FADE04725F61C182BE34F1D552018AB495CF757AB6F7BF46E965D67FF1ADAFFA930CA850A4B738121EA13FA2E497CBA576CE16C7FBFC25485635.42CAC92CF24D06470F2AC2A0588506C02A972BA0C85BD2599BFC141FE0C865E8A5CD15CED6080AA3810C68EF38880E9825CB180BA5F704FE4F54FF49B690948C"
+    deploy_cephfs: false
 
-# Three hypervisors setup. All machines are part of the hypervisor group.
 hypervisors:
   hosts:
-    node1:
-    node2:
-    node3:
+    hypervisor1:
+    hypervisor2:
   vars:
-    isolcpus: "4-N" # The list of CPUs to isolate. TODO
+    isolcpus: "4-6"
     livemigration_user: libvirtadmin
 
-# Three hypervisors setup. The observer group is empty.
 observers:
   hosts:
+    observer:
 # Cluster part. More information on the wiki: https://lf-energy.atlassian.net/wiki/x/SgB9GQ
 cluster_machines:
   hosts:
-    node1:
-      team0_0: "eno2" # Cluster interface connected to node2. TODO
-      team0_1: "eno3" # Cluster interface connected to node3. TODO
-      cluster_ip_addr: "192.168.55.1" # IP address of this node on the cluster. TODO
-      cluster_next_ip_addr: "192.168.55.2" # IP address of node2 on the cluster. TODO
-      cluster_previous_ip_addr: "192.168.55.3" # IP address of node3 on the cluster. TODO
+    hypervisor1:
+      team0_0: "enp9s0" # Cluster interface connected to hypervisor2.
+      team0_1: "enp8s0" # Cluster interface connected to observer.
+      cluster_ip_addr: "192.168.55.1" # IP address of this node on the cluster.
+      cluster_next_ip_addr: "192.168.55.2" # IP address of hypervisor2 on the cluster.
+      cluster_previous_ip_addr: "192.168.55.3" # IP address of observer on the cluster.
 
-    node2:
-      team0_0: "eno2" # Cluster interface connected to node3. TODO
-      team0_1: "eno3" # Cluster interface connected to node1. TODO
-      cluster_ip_addr: "192.168.55.2" # IP address of this node on the cluster. TODO
-      cluster_next_ip_addr: "192.168.55.3" # IP address of node3 on the cluster. TODO
-      cluster_previous_ip_addr: "192.168.55.1" # IP address of node1 on the cluster. TODO
+    hypervisor2:
+      team0_0: "enp9s0" # Cluster interface connected to observer.
+      team0_1: "enp8s0" # Cluster interface connected to hypervisor1.
+      cluster_ip_addr: "192.168.55.2" # IP address of this node on the cluster.
+      cluster_next_ip_addr: "192.168.55.3" # IP address of observer on the cluster.
+      cluster_previous_ip_addr: "192.168.55.1" # IP address of hypervisor1 on the cluster.
 
-    node3:
-      team0_0: "enp2s0" # Cluster interface connected to node1. TODO
-      team0_1: "enp3s0" # Cluster interface connected to node2. TODO
-      cluster_ip_addr: "192.168.55.3" # IP address of this node on the cluster. TODO
-      cluster_next_ip_addr: "192.168.55.1" # IP address of node1 on the cluster. TODO
-      cluster_previous_ip_addr: "192.168.55.2" # IP address of node2 on the cluster. TODO
+    observer:
+      team0_0: "ens6f1" # Cluster interface connected to hypervisor1.
+      team0_1: "ens6f0" # Cluster interface connected to hypervisor2.
+      cluster_ip_addr: "192.168.55.3" # IP address of this node on the cluster.
+      cluster_next_ip_addr: "192.168.55.1" # IP address of hypervisor1 on the cluster.
+      cluster_previous_ip_addr: "192.168.55.2" # IP address of hypervisor2 on the cluster.
       br_rstp_priority: 12288 # Do not modify, used by RSTP
 
   vars:
     deploy_cephfs: false # Change to true to deploy cephfs on your cluster
 
 # Ceph monitor. All machines in the cluster must be part of mons groups
+# Note : By default SEAPATH uses ceph-ansible to configure Ceph.
+# You can also switch to cephadm deployment by setting force_cephadm to true (available on Debian and SLES)
 mons:
   hosts:
-    node1:
-    node2:
-    node3:
+    hypervisor1:
+    hypervisor2:
+    observer:
   vars:
+    cephadm_network: "192.168.55.0/24"
+    cephadm_pullimages: true
+    cephadm_release: "18.2.7"
+    cephadm_release_name: "reef"
     ceph_origin: distro
-    cluster_network: "192.168.55.0/24" # IP range of your cluster. TODO
+    cluster_network: "192.168.55.0/24" # IP range of your cluster.
     public_network: "{{ cluster_network }}"
     monitor_address: "{{ cluster_ip_addr }}"
     cephadm_network: "{{ public_network }}"
-    configure_firewall: false
-    ntp_service_enabled: false
+    configure_firewall: true
+    ntp_service_enabled: true
     dashboard_enabled: false
     ceph_conf_overrides:
       global:
@@ -128,23 +135,23 @@ mons:
 # Only hypervisors are part of the OSD group
 osds:
   hosts:
-    node1:
+    hypervisor1:
       # Set this to the path of the disk that will contains ceph data.
       # The path can be found in "/dev/disk/by-path/"
-      ceph_osd_disk: "/dev/disk/by-path/pci-0000:03:00.0-scsi-0:2:1:0" # TODO
-    node2:
-      ceph_osd_disk: "/dev/disk/by-path/pci-0000:03:00.0-scsi-0:2:1:0" # TODO
-    node3:
-      ceph_osd_disk: "/dev/disk/by-path/pci-0000:03:00.0-scsi-0:2:1:0" # TODO
+      ceph_osd_disk: "/dev/disk/by-path/pci-0000:00:17.0-ata-4"
+    hypervisor2:
+      ceph_osd_disk: "/dev/disk/by-path/pci-0000:00:17.0-ata-4"
+    observer:
+      ceph_osd_disk: "/dev/disk/by-path/pci-0000:00:1f.2-ata-2"
   vars:
     devices: "{{ ceph_osd_disk }}"
 
 # Ceph clients. All machines in the cluster must be part of clients groups
 clients:
   hosts:
-    node1:
-    node2:
-    node3:
+    hypervisor1:
+    hypervisor2:
+    observer:
   vars:
     user_config: true
     rbd:
