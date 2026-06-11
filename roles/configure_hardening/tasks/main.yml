@@ -38,3 +38,5 @@
   ansible.builtin.import_tasks: syslog.yml
 - name: Configure audit hardening
   ansible.builtin.import_tasks: audit.yml
+- name: Run OpenSCAP remediation
+  ansible.builtin.import_tasks: oscap.yml
