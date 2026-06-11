@@ -4,3 +4,6 @@
 ---
 configure_hardening_login_defs_file: /etc/login.defs
 configure_hardening_etc_securetty_group: root
+
+configure_hardening_oscap_profile: xccdf_org.ssgproject.content_profile_anssi_bp28_high
+configure_hardening_oscap_ds_file: /usr/share/xml/scap/ssg/content/ssg-sle16-ds.xml
