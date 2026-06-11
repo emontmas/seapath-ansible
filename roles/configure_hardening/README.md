@@ -20,6 +20,7 @@ No requirement.
 | configure_hardening_login_defs_file | No | The login.defs file to configure. Defaults to /etc/login.defs |
 | configure_hardening_etc_securetty_group | No | The group of the /etc/securetty file. Defaults to root |
 | configure_hardening_grub_update_command | Yes | Command to be run to update GRUB after configuration modification |
+| configure_hardening_sshd_has_lastlog | No | True if openssh server was built with lastlog support. Defaults to true |
 
 ## Example Playbook
 
