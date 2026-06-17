@@ -13,8 +13,10 @@ clean
 
 cukinia_log "$(_colorize yellow "--- Test vm_manager module libvirt part ---")"
 
+{% if inventory_hostname in groups.get('hypervisors', []) %}
 test_id "SEAPATH-00065" as "list secrets" cukinia_test `/usr/local/bin/libvirt_cmd secrets \
     |grep -c client.libvirt` -gt 0
+{% endif %}
 
 test_id "SEAPATH-00066" as "define VM from a valtest_id configuration" cukinia_cmd \
     /usr/local/bin/libvirt_cmd define "$(/usr/bin/python3 -c 'import vm_manager as m; print(m.__path__[0])')/testdata/vm.xml"
